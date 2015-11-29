@@ -38,6 +38,9 @@ body {
 h1, h2, h3, h4, h5, h6 {
   margin-top: 2em;
   margin-bottom: 1.5em;
+  color: hsl(0,10%,7%);
+  font-weight: normal;
+
 }
 h2 { font-size: 2rem; }
 h2 { font-size: 1.7rem; }
@@ -61,6 +64,17 @@ code {
   position: relative;
   top: -.05em;
 }
+
+a {
+  box-shadow: inset 0 -.2em #BAEBFB;
+  padding: 0 .1em;
+  margin: 0 -.1em;
+  text-decoration: none;
+  color: inherit;
+}
+a:hover {
+  background-color: #BAEBFB;
+}
 </style>
 </head>
 <body>
@@ -73,7 +87,7 @@ code {
   <p>See the <code>()</code> on the end? So simple, right? But nope, that's not legal syntax in JS.</p>
   <p>Let's try this instead:</p>
   <pre class="code">function bob() { .. } bob();</pre>
-  <p>That works, but&hellip; now <code>bob</code> has escaped into the surrounding scope, which we might not have wanted.</p>
+  <p>That works, but&hellip; now <code>bob</code> has escaped into the <a href=#>surrounding</a> scope, which we might not have wanted.</p>
   <h3 id="function-without-the-bob">Function Without The <code>bob()</code></h3>
   <p>How do we declare and execute the function without the <code>bob()</code> in the mix?</p>
   <p>If you want to declare and execute a function all in one go, you'll have to make it a function expression instead of a declaration — declarations have the word <code>function</code> in the very first position, expressions don't.</p>
