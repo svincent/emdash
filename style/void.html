@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Document</title>
+
+<style>
+/* latin */
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Lora'), local('Lora-Regular'), url(https://fonts.gstatic.com/s/lora/v9/rAXKWvABQNHjPUk26ixVvvesZW2xOQ-xsNqO47m55DA.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+}
+/* latin */
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Lora Bold'), local('Lora-Bold'), url(https://fonts.gstatic.com/s/lora/v9/mlTYdpdDwCepOR2s5kS2CwLUuEpTyoUstqEm5AMlJo4.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+}
+
+html {
+  font-size: 16pt;
+  line-height: 1.6;
+}
+
+body {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: 'Lora', serif;
+  color: hsl(0,0%,20%)
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 2em;
+  margin-bottom: 1.5em;
+}
+h2 { font-size: 2rem; }
+h2 { font-size: 1.7rem; }
+h4 { font-size: 1.5rem; }
+h5 { font-size: 1.4rem; }
+h6 { font-size: 1.3rem; }
+
+pre {
+  background-color: #eee;
+  border-radius: 0.2rem;
+  font-size: .8rem;
+  line-height: 1.3rem;
+  padding: .5rem .7rem;
+}
+
+code {
+  background-color: #eee;
+  border-radius: 0.2em;
+  font-size: .8em;
+  padding: .1em .2em;
+  position: relative;
+  top: -.05em;
+}
+</style>
+</head>
+<body>
+
+<h2><a href="http://blog.getify.com/void-of-function-expression/" title="Void of Function Expression">Void of Function Expression</a></h2>
+<div class="entry">
+  <div class="postmetadata">Published at: 09:11 am - Sunday November 08 2015 </div>
+  <p>Why can't I declare a function and immediately execute it?</p>
+  <pre class="code">function foo() { .. }();</pre>
+  <p>See the <code>()</code> on the end? So simple, right? But nope, that's not legal syntax in JS.</p>
+  <p>Let's try this instead:</p>
+  <pre class="code">function bob() { .. } bob();</pre>
+  <p>That works, but&hellip; now <code>bob</code> has escaped into the surrounding scope, which we might not have wanted.</p>
+  <h3 id="function-without-the-bob">Function Without The <code>bob()</code></h3>
+  <p>How do we declare and execute the function without the <code>bob()</code> in the mix?</p>
+  <p>If you want to declare and execute a function all in one go, you'll have to make it a function expression instead of a declaration — declarations have the word <code>function</code> in the very first position, expressions don't.</p>
+  <p>How do we do that? Let's first try this:</p>
+  <pre class="code">function bob() { .. } ( bob )();</pre>
+  <p>Here, I've wrapped <code>( )</code> around the name <code>bob</code> in the function call expression. What I'm illustrating here is that a call expression can actually be thought of as two separate expressions: (1) the lexical name look-up <code>bob</code> to get the function value reference; (2) the invocation operator <code>()</code> against the function value reference.</p>
+  <p>Well, what if we just do this:</p>
+  <pre class="code">( function bob() { .. } )();</pre>
+  <p>We just inlined the function value, eliminating the need to declare and then look-up <code>bob</code>. So the expression <code>( function bob() { .. } )</code> is still going to produce the same function value reference, and thus the next <code>()</code> will invoke it all the same.</p>
+  <p>But now we've accomplished our goal of “declaring” (actually <em>expressing</em>) a function value and then immediately executing it. How? Because <code>function</code> is no longer in the first position in the statement, so now it's able to immediately execute!</p>
+  <p>This is what's called the <strong>IIFE</strong> (<strong>I</strong>mmediately <strong>I</strong>nvoked <strong>F</strong>unction <strong>E</strong>xpression) pattern. We're a terribly creative bunch with our naming, aren't we!?</p>
+  <p>BTW, you may have seen an alternate form of the IIFE parenthesis wrapping before, advocated by Crockford and others. We can observe:</p>
+  <pre class="code">function bob() { .. }
+( bob() );</pre>
+  <p>And then:</p>
+  <pre class="code">( function bob() { .. }() );</pre>
+  <p><strong>Note:</strong> This works for precisely the same reason as the previous variation: the outer <code>( .. )</code> serves no other purpose but to move <code>function</code> out of the first position of the statement, thereby making it an expression instead of a declaration. That makes the <code>()</code> after the function legal syntax.</p>
+  <h3 id="why-iife">Why IIFE?</h3>
+  <p>The primary purpose of an IIFE is to create a function-block of scope in the middle of some other scope of our program. This could for example be to create variable(s) that will only exist for the life of that IIFE and not pollute the enclosing scope.</p>
+  <pre class="code">var a = 2;
+
+(function IIFE(){
+   var a = 10;
+   var b = 20;
+   console.log( a * b ); // 200
+})();
+
+console.log(a); // 2</pre>
+  <p>Of course, we can do that now in ES6 with block scoping and <code>let</code>:</p>
+  <pre class="code">var a = 2;
+
+{
+   let a = 10;
+   let b = 20;
+   console.log( a * b ); // 200
+}
+
+console.log(a); // 2</pre>
+  <p>Once you have the <code>{ let .. }</code>-form available, why would you use an IIFE form ever again? It's heavier and uglier, right?</p>
+  <h4 id="changed-this-return">Changed <code>this</code> / <code>return</code> / etc</h4>
+  <p>A function changes the meaning of <code>this</code>, <code>return</code>, etc. If that's <em>not</em> what you want, the <code>{ let .. }</code>-form is helpful. But, what if that's exactly what you want!?</p>
+  <p>For example, you may want a “block” in the middle of some code where the <code>this</code> is set differently. Or you may want to use <code>return</code> to exit a block early on some condition?</p>
+  <pre class="code">function foo(o) {
+   console.log(this.id); // 1
+
+   (function IIFE(){
+      console.log(this.id);
+      if (this.id &gt; 4) return;
+      this.id++;
+   }).call(o);
+
+   this.id++;
+}
+
+var o1 = { id: 1 }, o2 = { id: 5 };
+
+foo.call(o1,o2);
+o1.id; // 2
+o2.id; // 5</pre>
+  <p><strong>Note:</strong> You <em>can</em> early-exit a block by labeling the block (like <code>bob: { .. }</code> and using <code>continue bob;</code>. However, that style of coding is far less common than early-exit with <code>return</code> from a function.</p>
+  <h4 id="repeating-iife">Repeating IIFE</h4>
+  <p>Another case may be repeating a “block” under some circumstances, such as:</p>
+  <pre class="code">(function IIFE(){
+   var el;
+
+   // is `abc` present in the DOM yet?
+   if (!(el = document.getElementById("abc"))) {
+      // try again in a little while
+      setTimeout(IIFE,100);
+      return;
+   }
+
+   // .. use `el` now that it's present
+})();</pre>
+  <p><strong>Note:</strong> I know, I know, using timeouts like that is far less preferable to listening for events to <em>know</em> when something is ready. The point is, there are cases when a block needs to be repeated, and having that block as a named-function (expression) is a simple way of achieving that.</p>
+  <h4 id="iife-return">IIFE <code>return</code></h4>
+  <p>Function expressions are also useful if you want to specifically return a value from a block. Consider:</p>
+  <pre class="code">var id = (function IIFE(){
+   var v;
+   do {
+       v = getNewID();
+   } while (!validateID(v));
+   return v;
+})();</pre>
+  <p>Of course, in the case where the IIFE is returning a value, you don't need the <code>( .. )</code> around it to make it an expression — it's already one because <code>function</code> isn't in the first position. So this works the same:</p>
+  <pre class="code">var id = function IIFE(){
+   var v;
+   do {
+     v = getNewID();
+   } while (!validateID(v));
+   return v;
+}();</pre>
+  <p>However, most people still put the <code>( .. )</code> around the function, because it's a helpful visual signal to know that the assignment isn't just of the function value itself, but that the <code>()</code> at the end will execute the function, and thus the assignment will be of any return value received.</p>
+  <p>I don't personally use IIFEs in assignments very often. I prefer to avoid that here possible. There are a few exceptions, but it's definitely a lesser-common pattern in my own code.</p>
+  <h4 id="do-expressions"><code>do</code>-Expressions</h4>
+  <p>There's a proposal being considered for the ES2016/2017 timeframe called “do-expressions.” A do-expression is a <code>do</code>-block kind of like the <code>do..while</code>, but where the <code>while</code> is left off, so it's not a repeating loop.</p>
+  <p>Instead, the do-expression can have a result value (aka “completion value”) — specifically, the result of the final expression inside the block — that can be captured/assigned:</p>
+  <pre class="code">var id = do {
+   let v;
+   do {
+      v = getNewID();
+   } while (!validateID(v));
+
+   v; // final expression becomes "completion value"
+};</pre>
+  <p>This is a proposal and not guaranteed. But it's interesting to consider what additional coding patterns it might enable in the future.</p>
+  <p>So it's clear that sometimes a function expression (IIFE) is more what you want than just a lightweight block scope.</p>
+  <h3 id="parentheses-alternatives"><code>( .. )</code> alternatives</h3>
+  <p>As we explored earlier, the only <em>concrete</em> reason for the <code>( .. )</code> in an IIFE is for syntax disambiguation. But that's not the only way we can accomplish the goal.</p>
+  <p>There are several unary operators (operators which take only one operand) in JS that can do the same thing. For example, some readers may have seen this (usually in minified code):</p>
+  <pre class="code">!function IIFE() { .. }();</pre>
+  <p>The <code>!</code> (negation) operator moves <code>function</code> out of the first position, so the <code>()</code> on the end becomes valid.</p>
+  <p>Other unary operators which can do the same thing: <code>+</code>, <code>-</code>, <code>~</code>, etc.</p>
+  <h4 id="operating-on-function">Operating on Function or Return?</h4>
+  <p>You may not have ever wondered/considered before, but <code>!</code> for example negates a value. So how does <code>!function...();</code> not negate the function to <code>false</code> before the ending <code>()</code> tries to invoke it (which would fail)?</p>
+  <p>Operator precedence. The <code>()</code> invocation operator binds more tightly than most other operators, which means it happens first. So the <code>!</code> negation, or the <code>+</code> numeric coercion, or the <code>~</code> bitwise negation, or &hellip; those all happen <em>after</em> the invocation.</p>
+  <p>In other words, all these other operator variations of the IIFE are fine (and shorter by 1 character) than the <code>( .. )</code> wrapping form, <strong>but only when there's no need to get a return value</strong> from the IIFE. Consider:</p>
+  <pre class="code">var x = !function IIFE(){ return 42; }();
+console.log(x); // false</pre>
+  <p>The <code>IIFE</code> function runs right away, and then the <code>!</code> is applied to any return value, which prevents us from getting the return value into <code>x</code> as we intend. The wrapping <code>( .. )</code> don't mess with the value, so that's the more preferred form if the return value of your IIFE is relevant.</p>
+  <h4 id="standalone-iife">Standalone IIFE</h4>
+  <p>But with standalone IIFE's, the return value is irrelevant, so those unary operator forms are all perfectly fine.</p>
+  <pre class="code">// no relevant return value here, so ~ is fine
+~function IIFE() { .. }();</pre>
+  <p>Which do you prefer? Do you still use <code>( .. )</code> even though it's one character longer? Most do, it seems. Perhaps that's just our normal habits at play.</p>
+  <p>I have taken to preferring a different operator for the job, which most JS devs have never heard much about: <code>void</code>.</p>
+  <p>The <code>void</code> operator is a unary operator that discards whatever value its given and returns <code>undefined</code>. Consider:</p>
+  <pre class="code">var x = void 42; console.log(x); // undefined</pre>
+  <p>So, if I have a standalone IIFE that won't have any relevant return value, I kinda prefer this form:</p>
+  <pre class="code">void function IIFE() { .. }();</pre>
+  <p><strong>What!?</strong> Yeah&hellip; no seriously, I do. But why?</p>
+  <p>Because the word <code>void</code> is a nice visual clue that stands out — it's five characters (“void “) instead of 1 or 2 — and has a convenient semantic benefit that none of the other operator forms do.</p>
+  <p><code>void</code> says, “hey, you! there's no relevant return value here. The result is void of value.”</p>
+  <p><strong>Update:</strong> As <a href="http://blog.getify.com/void-of-function-expression/comment-page-1/#comment-574893">David mentions</a> in the comments, <code>void</code> is also useful for <code>void</code>ing out the automatic return value from an <code>=&gt;</code> arrow function's body expression.</p>
+  <h3 id="understandability">Understandability</h3>
+  <p>At this point, most of you probably think I'm nuts for preferring <code>void</code>.</p>
+  <p>Just hear me out.</p>
+  <p>My primary goal is not shorter code. My primary goal is more understandable code. Code is communication with other humans.</p>
+  <p>So when someone is reading code, especially for the first time, with an IIFE in it, if the form is <code>( .. )</code>-wrapped, or using <code>!</code> or whatever, those operators have <strong>absolutely no meaning or obvious purpose.</strong>
+  </p>
+  <p>There's zero semantic reason for them to be included. They have to accept at face value that there's some weird grammatic nuance that makes them required. Those sorts of things are not only <em>not helpful</em> in learning, but they actively overload the learner's brain making it harder to understand other things.</p>
+  <p>I think <code>void</code>, on the other hand, offers a slight improvement in that there's some meaningful, semantic reason for it to exist. We can explain that it's there to signal no return value. It's secondary (and irrelevant to the learner!) benefit is that it accomplishes that disambiguation for grammar purposes.</p>
+  <p>Given the choice between something that is nothing but visual clutter and serves no obvious purpose, which you just have to accept blindly, and something that has at least some degree of semantic explanation, I think the latter creates more understandable code than the former.</p>
+  <p>Ironically, it's the <code>( .. )</code> / <code>!</code> / <code>+</code> / etc forms that are <em>void</em> of any value in our code. <code>void</code> gives our IIFE's meaning. And understandability.</p>
+</div>
+
+</body>
+</html>
